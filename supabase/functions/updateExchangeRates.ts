@@ -5,7 +5,7 @@ import {
   sampleExchangeRates,
 } from "../../data/sampleData.ts";
 
-async function insertSampleData2() {
+async function insertSampleData() {
   // Insert Banks
   for (const bank of sampleBanks) {
     const { data, error } = await supabase.from("banks").upsert(bank, {
@@ -85,10 +85,9 @@ async function insertSampleData2() {
   }
 }
 
-// Trigger data insertion
 Deno.serve(async (): Promise<Response> => {
   try {
-    await insertSampleData2();
+    await insertSampleData();
     return new Response("Sample data inserted successfully!", { status: 200 });
   } catch (error) {
     console.error("Error in Edge function:", error);

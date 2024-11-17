@@ -59,5 +59,5 @@ BEGIN
 END;
 $$;
 
--- Schedule the function to run daily at 8 AM
+
 SELECT cron.schedule('fetch_exchange_rates_job', '0 8,12,18 * * *', 'SELECT fetch_exchange_rates();');

@@ -46,7 +46,6 @@ async function fetchExchangeRates() {
         currency_id: currencyId,
         buying_rate,
         selling_rate,
-        date: new Date().toISOString().split("T")[0],
       });
 
       if (error) {
