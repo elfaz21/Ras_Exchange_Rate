@@ -1,0 +1,8 @@
+[build]
+  functions = "functions"
+   command = "deno run --allow-env --allow-net --allow-read functions/updateExchangeRates.ts"
+
+[[redirects]]
+  from = "/*"
+  to = "/functions/updateExchangeRates"
+  status = 200

@@ -1,0 +1,12 @@
+{
+    "permissions": {
+      "env": true,
+      "net": true,
+      "import": true,
+      "read": true
+    },
+    "tasks": {
+      "start": "denon run --allow-env --allow-net --unstable --allow-import --allow-read --no-prompt ./rateLimit.ts"
+    }
+  }
+  
