@@ -14,7 +14,7 @@ CREATE TABLE banks (
     updated_at TIMESTAMP DEFAULT NOW()
 );
 
--- Create Currencies Table with a flag_url column
+-- Create Currencies Table
 CREATE TABLE currencies (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     currency_code VARCHAR UNIQUE NOT NULL,
