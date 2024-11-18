@@ -11,7 +11,7 @@ DECLARE
     buying_rate numeric;
     selling_rate numeric;
 BEGIN
-    -- Make an HTTP GET request to an external API
+    -- Make an HTTP GET request
     SELECT * INTO response
     FROM http_request('GET', 'apiUrl');
 
@@ -19,14 +19,14 @@ BEGIN
     FOR bank_record IN
         SELECT * FROM jsonb_array_elements(response->'data')
     LOOP
-        -- Get bank_id by matching the bank_code from the API response
+        -- Get bank_id by matching the swift_code from the API response
         SELECT id INTO bank_id
         FROM banks
-        WHERE bank_code = bank_record->>'bank_code';
+        WHERE swift_code = bank_record->>'swift_code';
 
         -- If bank doesn't exist, skip this record
         IF NOT FOUND THEN
-            RAISE NOTICE 'Bank with code % not found, skipping.', bank_record->>'bank_code';
+            RAISE NOTICE 'Bank with code % not found, skipping.', bank_record->>'swift_code';
             CONTINUE;
         END IF;
 
