@@ -1,0 +1,9 @@
+{
+    "projectId": "your-supabase-project-id",
+    "functions": {
+      "dir": "./supabase/functions",
+      "runtime": "deno",
+      "edge": true
+    }
+  }
+  

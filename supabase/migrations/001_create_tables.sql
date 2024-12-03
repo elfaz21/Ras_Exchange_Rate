@@ -1,0 +1,74 @@
+-- Drop the exchange_rates table if it exists
+DROP TABLE IF EXISTS exchange_rates;
+
+-- Drop the currencies table if it exists
+DROP TABLE IF EXISTS currencies;
+
+-- Drop the banks table if it exists
+DROP TABLE IF EXISTS banks;
+
+-- Create the banks table 
+CREATE TABLE banks (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    bank_name VARCHAR(255) UNIQUE NOT NULL,
+    logo_url TEXT,
+    created_at TIMESTAMPTZ NOT NULL,
+    updated_at TIMESTAMPTZ NOT NULL
+);
+
+-- Create the currencies table 
+CREATE TABLE currencies (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    currency_code VARCHAR(10) UNIQUE NOT NULL,
+    flag_url TEXT,
+    created_at TIMESTAMPTZ NOT NULL,
+    updated_at TIMESTAMPTZ NOT NULL
+);
+
+-- Create the exchange_rates table with UUID and timestamps
+CREATE TABLE exchange_rates (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    bank_id UUID REFERENCES banks(id) ON DELETE CASCADE,
+    currency_id UUID REFERENCES currencies(id) ON DELETE CASCADE,
+    buying_rate DECIMAL(10, 2) NOT NULL CHECK (buying_rate > 0), 
+    selling_rate DECIMAL(10, 2) NOT NULL CHECK (selling_rate > 0),
+    data_fetched_date DATE NOT NULL,
+    created_at TIMESTAMPTZ NOT NULL,
+    updated_at TIMESTAMPTZ NOT NULL,
+    UNIQUE (bank_id, currency_id, data_fetched_date) 
+);
+
+
+
+
+CREATE OR REPLACE FUNCTION set_timestamps()
+RETURNS TRIGGER AS $$
+BEGIN
+    IF TG_OP = 'INSERT' THEN
+        NEW.created_at = NOW();
+        NEW.updated_at = NOW();
+        NEW.data_fetched_date = CURRENT_DATE; 
+    ELSIF TG_OP = 'UPDATE' THEN
+        NEW.updated_at = NOW();
+    END IF;
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Create triggers for banks table
+CREATE TRIGGER banks_set_timestamps
+BEFORE INSERT OR UPDATE ON banks
+FOR EACH ROW
+EXECUTE FUNCTION set_timestamps();
+
+-- Create triggers for currencies table
+CREATE TRIGGER currencies_set_timestamps
+BEFORE INSERT OR UPDATE ON currencies
+FOR EACH ROW
+EXECUTE FUNCTION set_timestamps();
+
+-- Create triggers for exchange_rates table
+CREATE TRIGGER exchange_rates_set_timestamps
+BEFORE INSERT OR UPDATE ON exchange_rates
+FOR EACH ROW
+EXECUTE FUNCTION set_timestamps();

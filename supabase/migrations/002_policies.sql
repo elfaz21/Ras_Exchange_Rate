@@ -1,3 +1,5 @@
+
+
 -- Enable Row-Level Security for each table
 ALTER TABLE banks ENABLE ROW LEVEL SECURITY;
 ALTER TABLE currencies ENABLE ROW LEVEL SECURITY;
@@ -38,3 +40,19 @@ CREATE POLICY public_read_exchange_rates
     ON exchange_rates
     FOR SELECT
     USING (true);
+
+
+    -- Enable RLS for the storage bucket
+ALTER TABLE storage.objects ENABLE ROW LEVEL SECURITY;
+
+-- Allow all actions for service_role
+CREATE POLICY "Allow all actions for service_role"
+ON storage.objects
+FOR ALL
+USING (auth.role() = 'service_role');
+
+-- Allow read access for public users
+CREATE POLICY "Allow read access for public users"
+ON storage.objects
+FOR SELECT
+USING (true);

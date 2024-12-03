@@ -4,22 +4,21 @@ export const sampleBanks = [
     name: "BOA",
     swift_code: "BOFAUS3N",
     country: "Ethiopia",
-    logo_url:
-      "http://127.0.0.1:54321/storage/v1/object/public/logos/BOA.png?t=2024-11-16T04%3A00%3A42.058Z",
   },
   {
     name: "CBE",
     swift_code: "CBETETAA",
     country: "Ethiopia",
-    logo_url:
-      "http://127.0.0.1:54321/storage/v1/object/public/logos/CBE.png?t=2024-11-16T04%3A01%3A06.838Z",
   },
   {
     name: "Zemen Bank",
     swift_code: "ZEMEETAAXXX",
     country: "Ethiopia",
-    logo_url:
-      "http://127.0.0.1:54321/storage/v1/object/public/logos/CBE.png?t=2024-11-16T04%3A01%3A06.838Z",
+  },
+  {
+    name: "Ahadu Bank",
+    swift_code: "AHUUETAAXXX",
+    country: "Ethiopia",
   },
 ];
 
@@ -27,14 +26,14 @@ export const sampleCurrencies = [
   {
     currency_code: "USD",
     name: "US Dollar",
-    flag_url:
-      "http://127.0.0.1:54321/storage/v1/object/public/logos/EUR%20(1).jpeg?t=2024-11-16T04%3A06%3A16.715Z",
   },
   {
     currency_code: "EUR",
     name: "Euro",
-    flag_url:
-      "http://127.0.0.1:54321/storage/v1/object/public/logos/EUR%20(1).jpeg?t=2024-11-16T04%3A06%3A16.715Z",
+  },
+  {
+    currency_code: "GBP",
+    name: "Great Britain Pound",
   },
 ];
 
@@ -42,19 +41,66 @@ export const sampleExchangeRates = [
   {
     swift_code: "BOFAUS3N",
     currency_code: "USD",
-    buying_rate: 105.0,
-    selling_rate: 106.0,
+    buying_rate: 126.888,
+    selling_rate: 137.888,
   },
   {
     swift_code: "CBETETAA",
     currency_code: "EUR",
-    buying_rate: 97.0,
-    selling_rate: 99.0,
+    buying_rate: 94.345,
+    selling_rate: 99.4568,
   },
   {
     swift_code: "ZEMEETAAXXX",
+    currency_code: "GBP",
+    buying_rate: 107.0,
+    selling_rate: 108.0,
+  },
+  {
+    swift_code: "AHUUETAAXXX",
+    currency_code: "GBP",
+    buying_rate: 127.784,
+    selling_rate: 128.457,
+  },
+];
+
+export const sampleLogos = [
+  {
+    file: "assets/logos/BOA.png",
+    path: "logos/BOA.png",
+    swift_code: "BOFAUS3N",
+  },
+  {
+    file: "assets/logos/CBE.png",
+    path: "logos/CBE.png",
+    swift_code: "CBETETAA",
+  },
+  {
+    file: "assets/logos/ZM.png",
+    path: "logos/ZM.png",
+    swift_code: "ZEMEETAAXXX",
+  },
+  {
+    file: "assets/logos/Ahadu.jpeg",
+    path: "logos/Ahadu.jpeg",
+    swift_code: "AHUUETAAXXX",
+  },
+];
+
+export const sampleFlags = [
+  {
+    file: "assets/flags/EUR.jpeg",
+    path: "flags/EUR.jpeg",
+    currency_code: "USD",
+  },
+  {
+    file: "assets/flags/GBP.png",
+    path: "flags/GBP.png",
+    currency_code: "GBP",
+  },
+  {
+    file: "assets/flags/USD.jpeg",
+    path: "flags/USD.jpeg",
     currency_code: "EUR",
-    buying_rate: 97.0,
-    selling_rate: 99.0,
   },
 ];
