@@ -1,10 +1,5 @@
--- Drop the exchange_rates table if it exists
 DROP TABLE IF EXISTS exchange_rates;
-
--- Drop the currencies table if it exists
 DROP TABLE IF EXISTS currencies;
-
--- Drop the banks table if it exists
 DROP TABLE IF EXISTS banks;
 
 -- Create the banks table 
@@ -41,19 +36,33 @@ CREATE TABLE exchange_rates (
 
 
 
+-- Drop existing triggers
+DROP TRIGGER IF EXISTS banks_set_timestamps ON banks;
+DROP TRIGGER IF EXISTS currencies_set_timestamps ON currencies;
+DROP TRIGGER IF EXISTS exchange_rates_set_timestamps ON exchange_rates;
+
+-- Drop the existing function
+DROP FUNCTION IF EXISTS set_timestamps();
+
+-- Create the new function
 CREATE OR REPLACE FUNCTION set_timestamps()
 RETURNS TRIGGER AS $$
 BEGIN
     IF TG_OP = 'INSERT' THEN
         NEW.created_at = NOW();
         NEW.updated_at = NOW();
-        NEW.data_fetched_date = CURRENT_DATE; 
+        NEW.data_fetched_date = CURRENT_DATE;
     ELSIF TG_OP = 'UPDATE' THEN
         NEW.updated_at = NOW();
+        NEW.data_fetched_date = CURRENT_DATE;
     END IF;
     RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
+
+
+
+
 
 -- Create triggers for banks table
 CREATE TRIGGER banks_set_timestamps

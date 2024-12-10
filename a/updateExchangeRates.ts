@@ -1,13 +1,13 @@
 // deno-lint-ignore-file
 
-import { supabase } from "../../createCLient.ts";
+import { supabase } from "../createCLient.ts";
 import {
   sampleBanks,
   sampleCurrencies,
   sampleExchangeRates,
   sampleFlags,
   sampleLogos,
-} from "../../data/sampleData.ts";
+} from "../data/sampleData.ts";
 
 // Check if a file exists
 async function checkFileExists(filePath: string) {

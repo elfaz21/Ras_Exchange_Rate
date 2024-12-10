@@ -1,6 +1,9 @@
 {
   "version": "4",
   "redirects": {
+    "https://cdn.skypack.dev/new/puppeteer@v23.10.1/dist=es2019": "https://cdn.skypack.dev/error/build:puppeteer@v23.10.1-CaPCLoTuRvbXUzWSwDlP",
+    "https://cdn.skypack.dev/puppeteer": "https://cdn.skypack.dev/new/puppeteer@v23.10.1/dist=es2019",
+    "https://cdn.skypack.dev/puppeteer@23.10.1": "https://cdn.skypack.dev/new/puppeteer@v23.10.1/dist=es2019",
     "https://deno.land/std/http/server.ts": "https://deno.land/std@0.224.0/http/server.ts",
     "https://deno.land/x/dotenv/mod.ts": "https://deno.land/x/dotenv@v3.2.2/mod.ts",
     "https://esm.sh/@supabase/supabase-js@2": "https://esm.sh/@supabase/supabase-js@2.46.1"
@@ -43,6 +46,7 @@
     "https://cdn.skypack.dev/-/ws@v8.18.0-QNBS0aBUkqIltOX8bZGC/dist=es2019,mode=imports/optimized/ws.js": "1d28a62de8fe1860778bab1543a277d81874c9a53a84810f945a2855975b1b6d",
     "https://cdn.skypack.dev/@supabase/supabase-js": "c8ca58a47bb524a56c96f43ade5fb1318aa0e8014d0ff3da791b2a207769d40c",
     "https://cdn.skypack.dev/cheerio": "3a74e565c5ab26533c6cb75e460a5b342c57341764d8a3731818a2f0b8c560a4",
+    "https://cdn.skypack.dev/error/build:puppeteer@v23.10.1-CaPCLoTuRvbXUzWSwDlP": "7f2e075e0fc1471789b19297c1a05b8fd9c423335e8e3a16484cbbe59c27c13f",
     "https://cdn.skypack.dev/http-cache-semantics?dts": "351196d5e6d6b0cd41d8cfcc73f9a741532c8ac5ff1686a2c86d554a2a3dc993",
     "https://deno.land/std@0.118.0/_util/assert.ts": "2f868145a042a11d5ad0a3c748dcf580add8a0dbc0e876eaa0026303a5488f58",
     "https://deno.land/std@0.118.0/_util/os.ts": "dfb186cc4e968c770ab6cc3288bd65f4871be03b93beecae57d657232ecffcac",

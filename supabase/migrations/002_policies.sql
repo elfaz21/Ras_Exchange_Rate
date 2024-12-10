@@ -5,6 +5,7 @@ ALTER TABLE banks ENABLE ROW LEVEL SECURITY;
 ALTER TABLE currencies ENABLE ROW LEVEL SECURITY;
 ALTER TABLE exchange_rates ENABLE ROW LEVEL SECURITY;
 
+
 -- Policies for service_role on banks table
 CREATE POLICY service_role_banks
     ON banks
@@ -40,6 +41,10 @@ CREATE POLICY public_read_exchange_rates
     ON exchange_rates
     FOR SELECT
     USING (true);
+
+
+
+
 
 
     -- Enable RLS for the storage bucket
