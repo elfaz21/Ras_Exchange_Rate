@@ -5,6 +5,7 @@ DROP TABLE IF EXISTS banks;
 -- Create the banks table 
 CREATE TABLE banks (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    ethio_banks VARCHAR(255) UNIQUE NOT NULL,
     bank_name VARCHAR(255) UNIQUE NOT NULL,
     logo_url TEXT,
     created_at TIMESTAMPTZ NOT NULL,
