@@ -1,8 +1,0 @@
-[build]
-  functions = "functions"
-   command = "deno run --allow-env --allow-net --allow-read supabase/functions/updateExchangeRates.ts"
-
-[[redirects]]
-  from = "/*"
-  to = "supabase/functions/updateExchangeRates"
-  status = 200
