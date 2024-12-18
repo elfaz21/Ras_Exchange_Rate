@@ -8,6 +8,7 @@ CREATE TABLE banks (
     ethio_banks VARCHAR(255) UNIQUE NOT NULL,
     bank_name VARCHAR(255) UNIQUE NOT NULL,
     logo_url TEXT,
+    data_fetched_date DATE NOT NULL,
     created_at TIMESTAMPTZ NOT NULL,
     updated_at TIMESTAMPTZ NOT NULL
 );
@@ -17,6 +18,7 @@ CREATE TABLE currencies (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     currency_code VARCHAR(10) UNIQUE NOT NULL,
     flag_url TEXT,
+    data_fetched_date DATE NOT NULL,
     created_at TIMESTAMPTZ NOT NULL,
     updated_at TIMESTAMPTZ NOT NULL
 );
@@ -41,8 +43,6 @@ CREATE TABLE exchange_rates (
 DROP TRIGGER IF EXISTS banks_set_timestamps ON banks;
 DROP TRIGGER IF EXISTS currencies_set_timestamps ON currencies;
 DROP TRIGGER IF EXISTS exchange_rates_set_timestamps ON exchange_rates;
-
--- Drop the existing function
 DROP FUNCTION IF EXISTS set_timestamps();
 
 -- Create the new function

@@ -4,7 +4,7 @@ import { serve } from "https://deno.land/std@0.192.0/http/server.ts";
 import { supabase } from "../../../createCLient.ts";
 
 interface ExchangeRate {
-  ethio_banks: string; // Change here
+  ethio_banks: string;
   currency_code: string;
   buying_rate: number;
   selling_rate: number;
@@ -148,7 +148,6 @@ export async function fetchExchangeRates(): Promise<Response> {
       }
     });
 
-    // Wait for all promises to complete
     await Promise.all(promises);
 
     const htmlResponse = `
