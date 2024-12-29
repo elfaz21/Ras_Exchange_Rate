@@ -1,211 +1,157 @@
 // deno-lint-ignore-file
+import { createClient } from "https://cdn.skypack.dev/@supabase/supabase-js";
 import * as cheerio from "https://cdn.skypack.dev/cheerio";
 import { serve } from "https://deno.land/std@0.192.0/http/server.ts";
-import { supabase } from "../../../createCLient.ts";
+import { config } from "https://deno.land/x/dotenv@v3.2.2/mod.ts";
+
+const env = config();
+const SUPABASE_URL = env.SUPABASE_URL || Deno.env.get("SUPABASE_URL")!;
+const SUPABASE_SERVICE_ROLE_KEY = env.SUPABASE_SERVICE_ROLE_KEY ||
+  Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
 interface ExchangeRate {
-  ethio_banks: string;
+  ethioBanks: string;
   currency_code: string;
   buying_rate: number;
   selling_rate: number;
+  lastUpdated: string;
 }
 
-// Scrape exchange rates
 export async function fetchExchangeRates(): Promise<Response> {
+  const startTime = Date.now();
+
   try {
     const url = "https://banksethiopia.com/ethiopian-birr-exchange-rate/";
+
     const response = await fetch(url);
 
     if (!response.ok) {
-      throw new Error(`Failed to fetch: ${response.status}`);
+      console.error(
+        `Failed to fetch from URL: ${url}, Status: ${response.status}`,
+      );
+      return new Response(
+        JSON.stringify({ error: "Failed to fetch exchange rates." }),
+        { status: 500, headers: { "Content-Type": "application/json" } },
+      );
     }
 
-    // Parse HTML content with Cheerio
     const html = await response.text();
     const $ = cheerio.load(html);
-
     const exchangeRateData: ExchangeRate[] = [];
 
-    // Scrape tables for each bank and extract the exchange rate data
-    $("table").each((index: any, table: any) => {
-      const ethioBanks =
-        $(table).find("thead h3 a").text().trim() || "Unknown Bank";
-
+    $("table").each((_: any, table: any) => {
+      const ethioBanks = $(table).find("thead h3 a").text().trim() ||
+        "Unknown Bank";
       if (ethioBanks === "Unknown Bank") return;
 
-      $(table)
-        .find("tbody tr")
-        .each((rowIndex: number, row: any) => {
-          const currencyElement = $(row).find("td").eq(0).find("p").first();
-          const currencyCode = currencyElement.next("p").first().text().trim();
-          const buyingRateText = $(row).find("td").eq(1).text().trim();
-          const sellingRateText = $(row).find("td").eq(2).text().trim();
+      const lastUpdated = $(table).find(".mobile_date_updated").text().replace(
+        "Last Updated ",
+        "",
+      ).trim();
 
-          const parsedBuyingRate = parseFloat(buyingRateText.replace(",", ""));
-          const parsedSellingRate = parseFloat(
-            sellingRateText.replace(",", "")
-          );
+      $(table).find("tbody tr").each((_: any, row: any) => {
+        const currencyElement = $(row).find("td").eq(0).find("p").first();
+        const currencyCode = currencyElement.next("p").first().text().trim();
+        const buyingRate = parseFloat(
+          $(row).find("td").eq(1).text().replace(",", "").trim(),
+        );
+        const sellingRate = parseFloat(
+          $(row).find("td").eq(2).text().replace(",", "").trim(),
+        );
 
-          if (
-            currencyCode &&
-            !isNaN(parsedBuyingRate) &&
-            !isNaN(parsedSellingRate)
-          ) {
-            exchangeRateData.push({
-              ethio_banks: ethioBanks,
-              currency_code: currencyCode,
-              buying_rate: parsedBuyingRate,
-              selling_rate: parsedSellingRate,
-            });
-          }
-        });
+        if (currencyCode && !isNaN(buyingRate) && !isNaN(sellingRate)) {
+          exchangeRateData.push({
+            ethioBanks,
+            currency_code: currencyCode,
+            buying_rate: buyingRate,
+            selling_rate: sellingRate,
+            lastUpdated,
+          });
+        }
+      });
     });
 
     if (exchangeRateData.length === 0) {
-      return new Response("No exchange rate data found.", { status: 404 });
+      return new Response(
+        JSON.stringify({ error: "No exchange rate data found." }),
+        { status: 404, headers: { "Content-Type": "application/json" } },
+      );
     }
 
-    // Store the data in Supabase
-    const promises = exchangeRateData.map(async (rate) => {
-      const { ethio_banks, currency_code, buying_rate, selling_rate } = rate;
+    const today = new Date().toISOString().split("T")[0];
 
-      try {
-        // Fetch the bank ID
-        const { data: bankData, error: bankError } = await supabase
-          .from("banks")
-          .select("id")
-          .eq("ethio_banks", ethio_banks)
-          .single();
+    // Batch Fetch Bank IDs
+    const uniqueBanks = [
+      ...new Set(exchangeRateData.map((rate) => rate.ethioBanks)),
+    ];
+    const bankResponse = await supabase.from("banks").select("id, ethio_banks")
+      .in("ethio_banks", uniqueBanks);
+    if (bankResponse.error) throw bankResponse.error;
+    const bankMap = Object.fromEntries(
+      bankResponse.data.map((
+        bank: { ethio_banks: any; id: any },
+      ) => [bank.ethio_banks, bank.id]),
+    );
 
-        if (bankError || !bankData) {
-          console.error(
-            "Error fetching bank:",
-            bankError?.message || "Unknown error"
-          );
-          return;
-        }
+    // Batch Fetch Currency IDs
+    const uniqueCurrencies = [
+      ...new Set(exchangeRateData.map((rate) => rate.currency_code)),
+    ];
+    const currencyResponse = await supabase.from("currencies").select(
+      "id, currency_code",
+    ).in("currency_code", uniqueCurrencies);
+    if (currencyResponse.error) throw currencyResponse.error;
+    const currencyMap = Object.fromEntries(
+      currencyResponse.data.map((
+        currency: { currency_code: any; id: any },
+      ) => [currency.currency_code, currency.id]),
+    );
 
-        const bankId = bankData.id;
+    // Prepare Data for Upsert
+    const upsertData = exchangeRateData.map((rate) => ({
+      bank_id: bankMap[rate.ethioBanks],
+      currency_id: currencyMap[rate.currency_code],
+      buying_rate: rate.buying_rate,
+      selling_rate: rate.selling_rate,
+      last_updated: rate.lastUpdated,
+    })).filter((item) => item.bank_id && item.currency_id);
 
-        // Fetch the currency ID
-        const { data: currencyData, error: currencyError } = await supabase
-          .from("currencies")
-          .select("id")
-          .eq("currency_code", currency_code)
-          .single();
+    // Batch Upsert
+    const upsertResponse = await supabase
+      .from("exchange_rates")
+      .upsert(upsertData, {
+        onConflict: ["bank_id", "currency_id", "data_fetched_date"],
+      });
 
-        if (currencyError || !currencyData) {
-          console.error(
-            "Error fetching currency:",
-            currencyError?.message || "Unknown error"
-          );
-          return;
-        }
+    if (upsertResponse.error) {
+      console.error(
+        "Error upserting exchange rates:",
+        upsertResponse.error.message,
+      );
+    }
 
-        const currencyId = currencyData.id;
-
-        // Check if the exchange rate already exists
-        const { data: existingRate, error: existingRateError } = await supabase
-          .from("exchange_rates")
-          .select("*")
-          .eq("bank_id", bankId)
-          .eq("currency_id", currencyId)
-          .single();
-
-        if (existingRate) {
-          // Update the existing exchange rate
-          const { error: updateError } = await supabase
-            .from("exchange_rates")
-            .update({
-              buying_rate,
-              selling_rate,
-            })
-            .eq("id", existingRate.id);
-
-          if (updateError) {
-            console.error("Error updating exchange rate:", updateError.message);
-          }
-        } else {
-          // Insert new exchange rate
-          const { error: insertError } = await supabase
-            .from("exchange_rates")
-            .insert({
-              bank_id: bankId,
-              currency_id: currencyId,
-              buying_rate,
-              selling_rate,
-            });
-
-          if (insertError) {
-            console.error(
-              "Error inserting exchange rate:",
-              insertError.message
-            );
-          }
-        }
-      } catch (error) {
-        console.error("Unexpected error while processing rate:", error);
-      }
-    });
-
-    await Promise.all(promises);
-
-    const htmlResponse = `
-      <!DOCTYPE html>
-      <head>
-      <meta charset="UTF-8">
-      <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <title>Exchange Rates</title>
-      <style>
-          body { font-family: Arial, sans-serif; margin: 20px; }
-          table { border-collapse: collapse; width: 100%; }
-          th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
-          th { background-color: #f2f2f2; }
-          h1 { text-align: center; }
-      </style>
-  </head>
-  <body>
-      <h1>Exchange Rates</h1>
-      <table>
-          <thead>
-              <tr>
-                  <th>Bank Name</th>
-                  <th>Currency Code</th>
-                  <th>Buying Rate</th>
-                  <th>Selling Rate</th>
-              </tr>
-          </thead>
-          <tbody>
-              ${exchangeRateData
-                .map(
-                  (rate) => `
-                  <tr>
-                      <td>${rate.ethio_banks}</td> <!-- Change here to use ethio_banks -->
-                      <td>${rate.currency_code}</td>
-                      <td>${rate.buying_rate}</td>
-                      <td>${rate.selling_rate}</td>
-                  </tr>
-              `
-                )
-                .join("")}
-          </tbody>
-      </table>
-  </body>
-  </html>
-    `;
-
-    return new Response(htmlResponse, {
-      headers: { "Content-Type": "text/html" },
-    });
+    // Return formatted JSON response
+    return new Response(
+      JSON.stringify(exchangeRateData, null, 2),
+      {
+        headers: { "Content-Type": "application/json" },
+      },
+    );
   } catch (error) {
-    console.error("Error fetching or inserting exchange rates:", error);
-    return new Response("Error occurred while processing exchange rates.", {
-      status: 500,
-    });
+    console.error("Error:", error);
+    return new Response(
+      JSON.stringify({
+        error: "An error occurred while processing exchange rates.",
+      }),
+      { status: 500, headers: { "Content-Type": "application/json" } },
+    );
   }
 }
 
 // Serve the function
-serve(async () => {
-  return await fetchExchangeRates();
+serve(async (req) => {
+  const response = await fetchExchangeRates();
+
+  return response;
 });

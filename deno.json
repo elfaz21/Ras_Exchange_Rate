@@ -6,7 +6,7 @@
       "read": true
     },
     "tasks": {
-      "start": "denon run --allow-env --allow-net --unstable --allow-import --allow-read --no-prompt ./supabase/functions/fetch_exchange_rates/fx_ethio_exchange_rate.ts"
+      "start": "denon run --allow-env --allow-net --unstable --allow-import --allow-read --allow-write --no-prompt ./supabase/functions/fetch_exchange_rates/index.ts"
     }
   }
   

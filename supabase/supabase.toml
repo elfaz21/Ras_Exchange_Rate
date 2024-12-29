@@ -1,5 +1,0 @@
-[functions]
-  directory = "supabase/functions"
-
-[db]
-  schema = "public"

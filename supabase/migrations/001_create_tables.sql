@@ -31,10 +31,24 @@ CREATE TABLE exchange_rates (
     buying_rate DECIMAL(10, 2) NOT NULL CHECK (buying_rate > 0), 
     selling_rate DECIMAL(10, 2) NOT NULL CHECK (selling_rate > 0),
     data_fetched_date DATE NOT NULL,
+    last_updated TEXT NOT NULL,
     created_at TIMESTAMPTZ NOT NULL,
     updated_at TIMESTAMPTZ NOT NULL,
     UNIQUE (bank_id, currency_id, data_fetched_date) 
 );
+
+
+
+-- For the banks table
+CREATE INDEX idx_banks_ethio_banks ON banks (ethio_banks);
+
+-- For the currencies table
+CREATE INDEX idx_currencies_currency_code ON currencies (currency_code);
+
+-- For the exchange_rates table
+CREATE INDEX idx_exchange_rates_bank_id ON exchange_rates (bank_id);
+CREATE INDEX idx_exchange_rates_currency_id ON exchange_rates (currency_id);
+CREATE INDEX idx_exchange_rates_data_fetched_date ON exchange_rates (data_fetched_date);
 
 
 
